@@ -2,6 +2,10 @@
   require('config/config.php');
   require('config/db.php');
 
+  // Message Vars
+  $msg = '';
+  $msgClass = '';
+
   // Check for Submit
   if (isset($_POST['submit'])) {
     // Get form data
@@ -10,19 +14,29 @@
     $body = mysqli_real_escape_string($conn, $_POST['body']);
     $author = mysqli_real_escape_string($conn, $_POST['author']);
 
-    $query = "UPDATE posts SET
-              title='$title',
-              author='$author',
-              body='$body'
-            WHERE id = {$update_id}";
+    // Check Required Fields
+    if (!empty($title) && !empty($body) && !empty($author)) {
 
-    // die(); is used to debug to make sure all data are submitted
-    // die($query);
-    if (mysqli_query($conn, $query)) {
-      header('Location: '.ROOT_URL.'');
+      $query = "UPDATE posts SET
+                title='$title',
+                author='$author',
+                body='$body'
+              WHERE id = {$update_id}";
+
+      // die(); is used to debug to make sure all data are submitted
+      // die($query);
+      if (mysqli_query($conn, $query)) {
+        header('Location: '.ROOT_URL.'');
+      }
+      else {
+        echo 'ERROR: '.mysqli_error($conn);
+      }
+
     }
     else {
-      echo 'ERROR: '.mysqli_error($conn);
+      // Failed
+      $msg = 'Please fill in all fields';
+      $msgClass = 'alert-danger';
     }
   }
 
@@ -50,6 +64,9 @@
   <?php include('inc/header.php'); ?>
     <div class="container">
       <h1>Add Post</h1>
+       <?php if ($msg != ''): ?>
+        <div class="alert <?php echo $msgClass; ?>"><?php echo $msg ?></div>
+      <?php endif; ?>
       <form method="post" action="<?php $_SERVER['PHP_SELF']; ?>">
         <div class="form-group">
           <label>Title</label>

@@ -2,20 +2,36 @@
   require('config/config.php');
   require('config/db.php');
 
+  // Message Vars
+  $msg = '';
+  $msgClass = '';
+
   // Check for Submit
   if (isset($_POST['submit'])) {
+
     // Get form data
     $title = mysqli_real_escape_string($conn, $_POST['title']);
     $body = mysqli_real_escape_string($conn, $_POST['body']);
     $author = mysqli_real_escape_string($conn, $_POST['author']);
 
-    $query = "INSERT INTO posts(title, author, body) VALUES('$title', '$author', '$body')";
+    // Check Required Fields
+    if (!empty($title) && !empty($body) && !empty($author)) {
 
-    if (mysqli_query($conn, $query)) {
-      header('Location: '.ROOT_URL.'');
+      $query = "INSERT INTO posts(title, author, body) VALUES('$title', '$author', '$body')";
+
+      if (mysqli_query($conn, $query)) {
+        header('Location: '.ROOT_URL.'');
+        
+      }
+      else {
+        echo 'ERROR: '.mysqli_error($conn);
+      }
+
     }
     else {
-      echo 'ERROR: '.mysqli_error($conn);
+      // Failed
+      $msg = 'Please fill in all fields';
+      $msgClass = 'alert-danger';
     }
   }
 ?>
@@ -23,6 +39,9 @@
   <?php include('inc/header.php'); ?>
     <div class="container">
       <h1>Add Post</h1>
+      <?php if ($msg != ''): ?>
+        <div class="alert <?php echo $msgClass; ?>"><?php echo $msg ?></div>
+      <?php endif; ?>
       <form method="post" action="<?php $_SERVER['PHP_SELF']; ?>">
         <div class="form-group">
           <label>Title</label>
